@@ -23,15 +23,15 @@
                 <div class="mdui-textfield mdui-textfield-floating-label">
 
                     <label class="mdui-textfield-label">用户名</label>
-                    <input type="text" name="username" class="mdui-textfield-input" required/>
+                    <input type="text" name="username" class="mdui-textfield-input" id="nameInput" required/>
                     <div class="mdui-textfield-error">用户名不能为空</div>
                 </div>
 
-                <div class="mdui-textfield mdui-textfield-floating-label">
+                <div class="mdui-textfield mdui-textfield-floating-label" id="passField">
 
                     <label class="mdui-textfield-label">密码</label>
-                    <input type="password" name="password" class="mdui-textfield-input" pattern="^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z]).*$" required/>
-                    <div class="mdui-textfield-error">密码至少 6 位，且包含大小写字母</div>
+                    <input type="password" name="password" class="mdui-textfield-input" pattern="^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z]).*$"  id="passInput" required/>
+                    <div class="mdui-textfield-error" id="passError">密码至少 6 位，且包含大小写字母</div>
                 </div>
 
                 <div class="mdui-float-right">No account? <button class="mdui-text-color-theme register-btn">Create one</button></div>
