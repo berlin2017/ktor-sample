@@ -4,3 +4,15 @@
     bottom: 0;
     height: auto; /*如设置bottom:50px,则需height:auto才能生效*/
 }
+
+.title-text{
+    font-family: medium-marketing-display-font, Georgia, Cambria, "Times New Roman", Times, serif;
+    font-weight: bold
+}
+
+.top-title{
+    font-size: 85px;
+    line-height: 85px;
+    font-weight: 500;
+    font-family: medium-marketing-display-font, Georgia, Cambria, "Times New Roman", Times, serif;
+}
