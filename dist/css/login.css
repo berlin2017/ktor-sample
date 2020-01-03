@@ -1,0 +1,17 @@
+#loginBtn{
+    height: 30px;
+    border-radius: 15px;
+    border: darkgray solid 1px;
+    line-height: 30px;
+}
+
+.register-btn{
+    border:none;
+    background: transparent;
+    cursor:pointer;
+}
+
+.register-btn:active{
+    border:none;
+    background: transparent;
+}
