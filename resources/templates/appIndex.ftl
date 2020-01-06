@@ -4,9 +4,9 @@
     <title>首页-欢迎来到Berlin的世界</title>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdui/0.4.3/js/mdui.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/mdui/0.4.3/css/mdui.min.css">
-    <script src="dist/js/appIndex.js" type="application/javascript" defer="true"></script>
-    <script src="dist/js/login.js" type="application/javascript" defer="true"></script>
-    <link rel="stylesheet" href="dist/css/appIndex.css">
+    <script src="/dist/js/appIndex.js" type="application/javascript" defer="true"></script>
+    <script src="/dist/js/login.js" type="application/javascript" defer="true"></script>
+    <link rel="stylesheet" href="/dist/css/appIndex.css">
 </head>
 <body class="mdui-theme-primary-indigo mdui-theme-accent-red">
 
