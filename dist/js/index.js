@@ -1,7 +1,7 @@
-var $$ = mdui.JQ
+var $$ = mdui.JQ;
 $$(function () {
     // showLoginDialog()
-})
+});
 
 // $$('#loginBtn').on("click", function (event) {
 //     showLoginDialog()
@@ -9,11 +9,11 @@ $$(function () {
 
 $$('.loginBtn').on("click", function (event) {
     showLoginDialog()
-})
+});
 
 $$('body').on("scroll",function (e) {
     console.log("scrolled")
-})
+});
 
 
 function showLoginDialog() {
@@ -42,6 +42,66 @@ function upCallback(page) {
     console.log("上拉加载");
     mescroll.endSuccess();
 }
+
+// var ctx = document.getElementById('myChart').getContext('2d');
+var ctx = $$('#myChart');
+var myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+        datasets: [{
+            label: '发布数',
+            data: [12, 19, 3, 5, 2, 3],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                display:false
+            }],
+            xAxes:[{
+                gridLines:{
+                    borderDash:[5]
+                    // drawOnChartArea:false
+                }
+            }]
+        },
+        legend: {
+            display: false,
+            position: 'bottom',
+            labels: {
+                boxWidth: 80,
+                fontColor: 'rgb(60, 180, 100)'
+            }
+        },
+        tooltips: {
+            cornerRadius: 0,
+            caretSize: 0,
+            xPadding: 16,
+            yPadding: 10,
+            backgroundColor: 'rgba(0, 150, 100, 0.9)',
+            titleFontStyle: 'normal',
+            titleMarginBottom: 15
+        }
+    }
+});
 
 
 
