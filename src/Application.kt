@@ -1,5 +1,6 @@
 package cn.lonsun
 
+import cn.lonsun.appDistribution.appRoute
 import cn.lonsun.user.user
 import freemarker.cache.ClassTemplateLoader
 import io.ktor.application.Application
@@ -98,6 +99,7 @@ fun Application.module(testing: Boolean = false) {
 
         user()
 
+        appRoute()
 
     }
 }
