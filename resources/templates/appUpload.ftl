@@ -12,7 +12,7 @@
 
 <div class="mdui-container">
 
-    <div class="mdui-progress">
+    <div class="mdui-progress mdui-m-t-5">
         <div class="mdui-progress-determinate" style="width: 0;" id="progressBar"></div>
     </div>
 
@@ -25,9 +25,11 @@
             （支持ipa或apk文件，支持中断后续传）
         </div>
 
-        <input id="file-input" type="file" multiple="multiple"
+        <input id="file-input" type="file" multiple="multiple" accept=".apk,.ipa"
                style="visibility: hidden; position: absolute; top: 0px; left: 0px; height: 100px; width: 100px;">
     </div>
+
+    <p><strong>注意：</strong> 贷款、吸储类应用禁止上传，同时请确保您的 App 符合berlin的 <a href="/about/rules" target="_blank">berlin应用审核规则</a>，违反该规则的 App 将被删除，屡次上传者将被封禁账号。</p>
 
 </div>
 </body>

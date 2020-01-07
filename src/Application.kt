@@ -1,5 +1,6 @@
 package cn.lonsun
 
+import cn.lonsun.about.about
 import cn.lonsun.appDistribution.appRoute
 import cn.lonsun.user.user
 import freemarker.cache.ClassTemplateLoader
@@ -100,6 +101,8 @@ fun Application.module(testing: Boolean = false) {
         user()
 
         appRoute()
+
+        about()
 
     }
 }
