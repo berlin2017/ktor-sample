@@ -1,14 +1,18 @@
 package cn.lonsun.appDistribution
 
-import cn.lonsun.appDistribution.model.APP_TYPENAME_ANDROID
-import cn.lonsun.appDistribution.model.AppInfo
-import cn.lonsun.appDistribution.model.AppItem
-import cn.lonsun.respondSuccess
+import cn.lonsun.*
+import cn.lonsun.appDistribution.dao.AppItems
+import cn.lonsun.appDistribution.dao.Apps
+import cn.lonsun.appDistribution.model.*
+import cn.lonsun.dao.UserDao
+import cn.lonsun.dao.Users
 import io.ktor.application.call
 import io.ktor.freemarker.FreeMarkerContent
+import io.ktor.http.Parameters
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
 import io.ktor.http.content.streamProvider
+import io.ktor.request.receive
 import io.ktor.request.receiveMultipart
 import io.ktor.response.respond
 import io.ktor.routing.Route
@@ -19,6 +23,11 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -30,13 +39,7 @@ fun Route.appRoute() {
 
     get(APP_PATH) {
         val list = mutableListOf<AppInfo>()
-        for (i in 0..6) {
-            val apps = mutableListOf<AppItem>()
-            for (j in 0..3) {
-                apps.add(AppItem("1.0.6", 202001061, "pgyer.com/U4aj", "2020-01-06 10:00"))
-            }
-            list.add(AppInfo(i, "安徽新媒体", APP_TYPENAME_ANDROID, apps))
-        }
+
         call.respond(FreeMarkerContent("appIndex.ftl", mapOf("data" to list), ""))
     }
 
@@ -48,6 +51,7 @@ fun Route.appRoute() {
         post {
             val multipart = call.receiveMultipart()
             var title = ""
+            val files = mutableListOf<File>()
             multipart.forEachPart { part ->
                 when (part) {
                     is PartData.FormItem -> {
@@ -65,15 +69,156 @@ fun Route.appRoute() {
                         part.streamProvider().use { input ->
                             file.outputStream().buffered().use { output -> input.copyToSuspend(output) }
                         }
+                        files.add(file)
                     }
                 }
 
                 part.dispose()
             }
-            call.respondSuccess(message = "上传成功")
+
+            call.respondSuccess(message = "上传成功", data = files)
         }
     }
+
+
+    post("$APP_PATH/getAppInfo") {
+        Database.connect(DB_URL, JDBC_DRIVER, DB_USER, DB_PASSWORD)
+        val params = call.receive<Parameters>()
+        val type = params["type"]
+        val id = params["bundleId"]
+        if (type != APP_TYPENAME_ANDROID && type != APP_TYPENAME_IOS) {
+            call.respondError(message = "类型不正确")
+            return@post
+        }
+        if (id.isNullOrBlank()) {
+            call.respondError(message = "id不能为空")
+            return@post
+        }
+        val appInfo = getAppInfo(id, type)
+        call.respondSuccess(data = appInfo?.toModel())
+    }
+
+    post("$APP_PATH/saveAppItem") {
+        val multipart = call.receiveMultipart()
+        var appId = ""
+        var versionName = ""
+        var versionCode = 0
+        var path = ""
+        var appName = ""
+        var icon = ""
+        multipart.forEachPart { part ->
+            when (part) {
+                is PartData.FormItem -> {
+                    if (part.name == "appId") {
+                        appId = part.value
+                    }
+                    if (part.name == "versionName") {
+                        versionName = part.value
+                    }
+                    if (part.name == "versionCode") {
+                        versionCode = part.value.toInt()
+                    }
+                    if (part.name == "path") {
+                        path = part.value
+                    }
+                    if (part.name == "appName") {
+                        appName = part.value
+                    }
+                }
+                is PartData.FileItem -> {
+                    if (part.name == "icon") {
+                        val uploadDir = File(uploadDir)
+                        if (!uploadDir.mkdirs() && !uploadDir.exists()) {
+                            throw IOException("Failed to create directory ${uploadDir.absolutePath}")
+                        }
+                        val file = File(uploadDir, "${part.originalFileName}")
+                        part.streamProvider().use { input ->
+                            file.outputStream().buffered().use { output -> input.copyToSuspend(output) }
+                        }
+                        icon = file.absolutePath
+                    }
+
+                }
+            }
+
+            part.dispose()
+        }
+
+        Database.connect(DB_URL, JDBC_DRIVER, DB_USER, DB_PASSWORD)
+//        val params = call.receive<Parameters>()
+//        val appId = params["appId"]
+//        val versionName = params["versionName"]
+//        val versionCode = params["versionCode"]
+//        val path = params["path"]
+//        val appName = params["appName"]
+//        val icon = params["icon"]
+        var appItem: AppItemDao? = null
+        transaction {
+            SchemaUtils.create(AppItems)
+            appItem = AppItemDao.new {
+                this.appId = appId
+                this.versionCode = versionCode
+                this.versionName = versionName
+                this.path = path
+                this.appName = appName
+                this.icon = icon
+            }
+        }
+        call.respondSuccess(data = appItem?.toModel())
+    }
+
+    route("$APP_PATH/publish") {
+        get {
+            Database.connect(DB_URL, JDBC_DRIVER, DB_USER, DB_PASSWORD)
+            val id = call.parameters["id"]
+            if (!id.isNullOrBlank()) {
+                var result: AppItemDao? = null
+                transaction {
+                    SchemaUtils.create(AppItems)
+                    result = AppItemDao.findById(id = id!!.toInt())
+                }
+                call.respond(FreeMarkerContent("appPublish.ftl", mapOf("data" to result?.toModel())))
+            }
+        }
+
+        post {
+            Database.connect(DB_URL, JDBC_DRIVER, DB_USER, DB_PASSWORD)
+            val params = call.receive<Parameters>()
+            val id = params["id"]
+            val updateDesc = params["updateDesc"]
+            val appInfo = params["appInfo"]
+            val publishTime = params["publishTime"]
+            if (!id.isNullOrBlank()) {
+                var result: AppItemDao? = null
+                transaction {
+                    SchemaUtils.create(AppItems)
+                    result = AppItemDao.findById(id = id.toInt())
+                    result?.updateDesc = updateDesc
+                    result?.appInfo = appInfo
+                    result?.publishTime = publishTime?.toLong() ?: 0L
+                    result?.isPublished = true
+                }
+                call.respondSuccess(data = result?.toModel())
+            }
+        }
+    }
+
+
+
+    get("$APP_PATH/getAppItem") {
+        val id = call.parameters["id"]
+        if (!id.isNullOrBlank()) {
+            var result: AppItemDao? = null
+            transaction {
+                SchemaUtils.create(AppItems)
+                result = AppItemDao.findById(id = id!!.toInt())
+            }
+            call.respondSuccess(data = result?.toModel())
+        }
+
+    }
 }
+
 
 suspend fun InputStream.copyToSuspend(
     out: OutputStream,
@@ -97,4 +242,30 @@ suspend fun InputStream.copyToSuspend(
         }
         return@withContext bytesCopied
     }
+}
+
+private fun getAppInfo(bundleId: String, type: String): AppsDao? {
+    var result: AppsDao? = null
+    transaction {
+        SchemaUtils.create(Apps)
+        result = AppsDao.find { (Apps.type eq type) and (Apps.bundleId eq bundleId) }.firstOrNull()
+    }
+    return if (result != null) {
+        result
+    } else {
+        creatApp(bundleId, type)
+    }
+}
+
+private fun creatApp(bundleId: String, type: String): AppsDao? {
+    var result: AppsDao? = null
+    transaction {
+        SchemaUtils.create(Apps)
+        result = AppsDao.new {
+            this.type = type
+            this.bundleId = bundleId
+            this.appId = creatAppId(bundleId)
+        }
+    }
+    return result
 }

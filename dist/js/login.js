@@ -1,5 +1,3 @@
-var $$ = mdui.JQ;
-
 $$('#loginBtn').on('click',function () {
     login()
 });

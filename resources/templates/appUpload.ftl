@@ -7,6 +7,7 @@
     <script src="/dist/js/appUpload.js" type="application/javascript" defer="true"></script>
     <script src="/dist/js/login.js" type="application/javascript" defer="true"></script>
     <link rel="stylesheet" href="/dist/css/appUpload.css">
+    <script src="https://app-info-parser.quincychen.cn/js/app-info-parser.min.js"></script>
 </head>
 <body class="mdui-theme-primary-indigo mdui-theme-accent-red">
 
@@ -30,6 +31,11 @@
     </div>
 
     <p><strong>注意：</strong> 贷款、吸储类应用禁止上传，同时请确保您的 App 符合berlin的 <a href="/about/rules" target="_blank">berlin应用审核规则</a>，违反该规则的 App 将被删除，屡次上传者将被封禁账号。</p>
+
+
+    <div id="result-list" class="mdui-m-t-5">
+
+    </div>
 
 </div>
 </body>

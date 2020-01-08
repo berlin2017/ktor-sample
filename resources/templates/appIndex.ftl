@@ -30,7 +30,7 @@
                         <img src="https://appicon.pgyer.com/image/view/app_icons/cf54234c9d371bc6db61b2fd71874dd4/60"
                              class="mdui-img-circle">
                         <div class="mdui-m-l-1">
-                            <div class="mdui-text-color-black app-name">${item.name}</div>
+                            <div class="mdui-text-color-black app-name">${item.bundleId}</div>
                             <div class="mdui-text-color-grey">${item.type}</div>
                         </div>
 

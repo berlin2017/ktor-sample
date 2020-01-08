@@ -5,8 +5,7 @@ const val APP_TYPENAME_IOS = "IOS"
 
 data class AppInfo(
     var id: Int,
-    var name: String,
-    var type:String,
-    var apps: List<AppItem>
+    var bundleId: String,
+    var type: String,
+    var appId:String
 )
-
