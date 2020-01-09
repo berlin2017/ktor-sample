@@ -3,7 +3,7 @@ package cn.lonsun.appDistribution.dao
 import org.jetbrains.exposed.dao.id.IntIdTable
 
 object AppItems :IntIdTable(){
-    var path = varchar("filePath",50)
+    var path = varchar("filePath",200)
     var versionCode = integer("versionCode")
     var versionName = varchar("versionName",50)
     var publishTime = long("publishTime").default(0L)

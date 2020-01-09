@@ -82,7 +82,7 @@ function uploadFile(files) {
             console.log(result);
             var data = JSON.parse(result);
             if (data.status === 1) {
-                const path = data.data[0].path;
+                const path = data.data[0].filePath;
                 // window.location.href = './publish?path=' + path
 
                 analysicApp(files[0], path)
