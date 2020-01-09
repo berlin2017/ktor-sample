@@ -145,7 +145,7 @@ function getAppInfo(bundleId, type, path, apkInfo) {
             console.log(result);
             const data = JSON.parse(result);
             if (data.status === 1) {
-                const file = dataURLtoFile(apkInfo.icon)
+                const file = dataURLtoFile(apkInfo.icon,bundleId+apkInfo.versionName)
                 saveAppItem(data.data.appId, path, apkInfo.versionName, apkInfo.versionCode, apkInfo.application.label[0], file)
             }
         }
