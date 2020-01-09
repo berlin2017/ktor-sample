@@ -4,8 +4,6 @@ import cn.lonsun.*
 import cn.lonsun.appDistribution.dao.AppItems
 import cn.lonsun.appDistribution.dao.Apps
 import cn.lonsun.appDistribution.model.*
-import cn.lonsun.dao.UserDao
-import cn.lonsun.dao.Users
 import io.ktor.application.call
 import io.ktor.freemarker.FreeMarkerContent
 import io.ktor.http.Parameters
@@ -25,16 +23,12 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.io.File
-import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
 const val APP_PATH = "app"
-const val uploadDir = "/files"
 fun Route.appRoute() {
 
     get(APP_PATH) {
@@ -49,34 +43,7 @@ fun Route.appRoute() {
         }
 
         post {
-            val multipart = call.receiveMultipart()
-            var title = ""
-            val files = mutableListOf<File>()
-            multipart.forEachPart { part ->
-                when (part) {
-                    is PartData.FormItem -> {
-                        if (part.name == "title") {
-                            title = part.value
-                        }
-                    }
-                    is PartData.FileItem -> {
-                        val ext = File(part.originalFileName).extension
-                        val uploadDir = File(uploadDir)
-                        if (!uploadDir.mkdirs() && !uploadDir.exists()) {
-                            throw IOException("Failed to create directory ${uploadDir.absolutePath}")
-                        }
-                        val file = File(uploadDir, "${part.originalFileName}")
-                        part.streamProvider().use { input ->
-                            file.outputStream().buffered().use { output -> input.copyToSuspend(output) }
-                        }
-                        files.add(file)
-                    }
-                }
-
-                part.dispose()
-            }
-
-            call.respondSuccess(message = "上传成功", data = files)
+            call.upload()
         }
     }
 
@@ -105,7 +72,8 @@ fun Route.appRoute() {
         var versionCode = 0
         var path = ""
         var appName = ""
-        var icon = ""
+        var icon: String? = null
+        var filePart: PartData.FileItem? = null
         multipart.forEachPart { part ->
             when (part) {
                 is PartData.FormItem -> {
@@ -127,31 +95,19 @@ fun Route.appRoute() {
                 }
                 is PartData.FileItem -> {
                     if (part.name == "icon") {
-                        val uploadDir = File(uploadDir)
-                        if (!uploadDir.mkdirs() && !uploadDir.exists()) {
-                            throw IOException("Failed to create directory ${uploadDir.absolutePath}")
-                        }
-                        val file = File(uploadDir, "${part.originalFileName}")
-                        part.streamProvider().use { input ->
-                            file.outputStream().buffered().use { output -> input.copyToSuspend(output) }
-                        }
-                        icon = file.absolutePath
+                        filePart = part
                     }
 
                 }
             }
-
-            part.dispose()
+        }
+        filePart?.let {
+            it.streamProvider().use { input ->
+                icon = input.let { it1 -> storeFile2Ftp("icons", filePart?.originalFileName!!, it1)?.filePath }
+            }
         }
 
         Database.connect(DB_URL, JDBC_DRIVER, DB_USER, DB_PASSWORD)
-//        val params = call.receive<Parameters>()
-//        val appId = params["appId"]
-//        val versionName = params["versionName"]
-//        val versionCode = params["versionCode"]
-//        val path = params["path"]
-//        val appName = params["appName"]
-//        val icon = params["icon"]
         var appItem: AppItemDao? = null
         transaction {
             SchemaUtils.create(AppItems)
@@ -175,7 +131,7 @@ fun Route.appRoute() {
                 var result: AppItemDao? = null
                 transaction {
                     SchemaUtils.create(AppItems)
-                    result = AppItemDao.findById(id = id!!.toInt())
+                    result = AppItemDao.findById(id = id.toInt())
                 }
                 call.respond(FreeMarkerContent("appPublish.ftl", mapOf("data" to result?.toModel())))
             }
