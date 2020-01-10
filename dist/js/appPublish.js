@@ -52,7 +52,6 @@ function publish(id) {
         url: './publish',
         data: {
             "id": id,
-            "publishTime": date.getTime(),
             "updateDesc": $$("#updateDesc").val(),
             "appInfo": $$("#appInfo").val()
         },
@@ -71,7 +70,7 @@ function showPublishSuccess() {
         message:'发布成功,请等待审核完成',
         timeout:1000,
         onClose:function () {
-            window.location.href="/"
+            window.location.href="./"
         }
     });
 }

@@ -23,8 +23,10 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.joda.time.DateTime
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -33,6 +35,25 @@ fun Route.appRoute() {
 
     get(APP_PATH) {
         val list = mutableListOf<AppInfo>()
+        Database.connect(DB_URL, JDBC_DRIVER, DB_USER, DB_PASSWORD)
+        transaction {
+            SchemaUtils.create(Apps)
+            SchemaUtils.create(AppItems)
+            val apps = AppsDao.all()
+            apps.forEach { app ->
+                val appInfo = app.toModel()
+                val appItems =
+                    AppItemDao.find { (AppItems.appId eq app.appId) and (AppItems.isPublished eq true) }
+                        .orderBy(Pair(AppItems.versionCode, SortOrder.DESC))
+                        .orderBy(Pair(AppItems.publishTime, SortOrder.DESC))
+                val apps = mutableListOf<AppItem>()
+                appItems.forEach {
+                    apps.add(it.toModel())
+                }
+                appInfo.apps = apps
+                list.add(appInfo)
+            }
+        }
 
         call.respond(FreeMarkerContent("appIndex.ftl", mapOf("data" to list), ""))
     }
@@ -143,7 +164,6 @@ fun Route.appRoute() {
             val id = params["id"]
             val updateDesc = params["updateDesc"]
             val appInfo = params["appInfo"]
-            val publishTime = params["publishTime"]
             if (!id.isNullOrBlank()) {
                 var result: AppItemDao? = null
                 transaction {
@@ -151,7 +171,7 @@ fun Route.appRoute() {
                     result = AppItemDao.findById(id = id.toInt())
                     result?.updateDesc = updateDesc
                     result?.appInfo = appInfo
-                    result?.publishTime = publishTime?.toLong() ?: 0L
+                    result?.publishTime = DateTime.now().millis
                     result?.isPublished = true
                 }
                 call.respondSuccess(data = result?.toModel())
@@ -172,6 +192,40 @@ fun Route.appRoute() {
             call.respondSuccess(data = result?.toModel())
         }
 
+    }
+
+    get("$APP_PATH/detail") {
+        call.respond(FreeMarkerContent("appDetail.ftl", null))
+    }
+
+    get("$APP_PATH/download/{appId}") {
+        val appId = call.parameters["appId"]
+        if (appId == null) {
+            call.respondError(message = "参数appId为空")
+            return@get
+        }
+        var appInfo:AppInfo? = null
+        Database.connect(DB_URL, JDBC_DRIVER, DB_USER, DB_PASSWORD)
+        transaction {
+            SchemaUtils.create(Apps)
+            SchemaUtils.create(AppItems)
+            val apps = AppsDao.find { Apps.appId eq appId }
+            if (apps.empty() || apps.count() != 1) {
+                return@transaction
+            }
+            appInfo = apps.first().toModel()
+            val appItems =
+                AppItemDao.find { (AppItems.appId eq appInfo!!.appId) and (AppItems.isPublished eq true) }
+                    .orderBy(Pair(AppItems.versionCode, SortOrder.DESC))
+                    .orderBy(Pair(AppItems.publishTime, SortOrder.DESC))
+            val appItemModels = mutableListOf<AppItem>()
+            appItems.forEach {
+                appItemModels.add(it.toModel())
+            }
+            appInfo?.apps = appItemModels
+        }
+
+        call.respond(FreeMarkerContent("appDownload.ftl", mapOf("data" to appInfo), ""))
     }
 }
 

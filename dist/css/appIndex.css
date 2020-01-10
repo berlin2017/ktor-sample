@@ -1,5 +1,13 @@
 .app-name{
-    font-size: 20px;
     font-weight: bold;
-    line-height: 40px;
+}
+
+tr:hover
+{
+    background-color:gainsboro;
+}
+
+.app-link::after{
+    content:url(/static/qrcode.png);
+    vertical-align: middle;
 }

@@ -10,37 +10,42 @@
 </head>
 <body class="mdui-theme-primary-indigo mdui-theme-accent-red">
 
-<div class="mdui-container">
+<div class="mdui-p-a-5">
     <div class="mdui-table-fluid mdui-m-t-5">
         <table class="mdui-table">
             <thead>
             <tr>
-                <th>应用名称</th>
-                <th>版本</th>
-                <th>下载方式</th>
-                <th>更新时间</th>
-                <th>操作</th>
+                <th class="mdui-text-color-black" style="font-weight: bold">应用名称</th>
+                <th class="mdui-text-color-black" style="font-weight: bold">版本</th>
+                <th class="mdui-text-color-black" style="font-weight: bold">下载方式</th>
+                <th class="mdui-text-color-black" style="font-weight: bold">更新时间</th>
+                <th class="mdui-text-color-black" style="font-weight: bold">操作</th>
             </tr>
             </thead>
             <tbody>
 
             <#list data as item>
-                <tr>
-                    <td class="mdui-valign">
-                        <img src="https://appicon.pgyer.com/image/view/app_icons/cf54234c9d371bc6db61b2fd71874dd4/60"
-                             class="mdui-img-circle">
-                        <div class="mdui-m-l-1">
-                            <div class="mdui-text-color-black app-name">${item.bundleId}</div>
-                            <div class="mdui-text-color-grey">${item.type}</div>
+                <tr class="mudi-ripple" style="cursor: pointer;">
+                    <td>
+                        <div class="mdui-valign">
+
+                            <img src="${item.apps[0].icon}"
+                                 width="40px" height="40px"
+                                 class="mdui-img-circle">
+                            <div class="mdui-m-l-1">
+                                <div class="mdui-text-color-black app-name">${item.apps[0].appName}</div>
+                                <div class="mdui-text-color-grey">${item.type}</div>
+                            </div>
+
                         </div>
 
                     </td>
                     <td>${item.apps[0].versionName}</td>
                     <td>
-                        ${item.apps[0].path}
+                        <span class="app-link" onclick="download('${item.appId}')">  ${item.apps[0].path} </span>
                     </td>
-                    <td>${item.apps[0].time}</td>
-                    <td >
+                    <td>${item.apps[0].time?number_to_datetime?string('yyyy-MM-dd hh:mm:ss')}</td>
+                    <td>
                         <div class="mdui-valign">
                             <button class="mdui-btn mdui-ripple mdui-color-green">详情</button>
                             <button class="mdui-btn mdui-ripple mdui-color-theme mdui-m-l-1">编辑</button>

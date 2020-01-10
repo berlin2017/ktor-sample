@@ -7,5 +7,6 @@ data class AppInfo(
     var id: Int,
     var bundleId: String,
     var type: String,
-    var appId:String
+    var appId:String,
+    var apps:List<AppItem> ?=null
 )

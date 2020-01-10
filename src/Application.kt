@@ -66,6 +66,7 @@ fun Application.module(testing: Boolean = false) {
             staticRootFolder = File("dist")
             file("login_bg_left.png")
             file("login_bg_right.png")
+            file("qrcode.png")
         }
 
         get("/") {
